@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calculator, DollarSign, AlertCircle, TrendingUp, Tag, ShoppingBag } from 'lucide-react';
+import { Calculator, DollarSign, AlertCircle, TrendingUp, Tag, ShoppingBag, ShieldAlert } from 'lucide-react';
 
 export default function App() {
   // 狀態管理 (State)
@@ -11,6 +11,7 @@ export default function App() {
   // 計算結果 (Derived State)
   const [systemQuote, setSystemQuote] = useState(0);
   const [isCapped, setIsCapped] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
   const [profit, setProfit] = useState(0);
 
   // 核心計算邏輯
@@ -20,11 +21,16 @@ export default function App() {
     const numCost = parseFloat(cost) || 0;
     const numMarkup = parseFloat(markup) || 0;
 
-    if (numFriday > 0) {
-      let calcQuote = numFriday + numMarkup;
-      let capped = false;
+    if (numFriday > 0 || numCost > 0) {
+      // 邏輯修改：當成本高於 Friday 售價時，以成本為基準 (即把溢價加回來)
+      const basePrice = Math.max(numFriday, numCost);
+      let calcQuote = basePrice + numMarkup;
+      
+      // 判斷是否處於溢價狀態 (成本 > Friday)
+      setIsPremium(numCost > numFriday && numFriday > 0);
 
       // 條件限制：系統報價不得大於建議售價
+      let capped = false;
       if (numMsrp > 0 && calcQuote > numMsrp) {
         calcQuote = numMsrp;
         capped = true;
@@ -36,6 +42,7 @@ export default function App() {
     } else {
       setSystemQuote(0);
       setIsCapped(false);
+      setIsPremium(false);
       setProfit(0);
     }
   }, [msrp, fridayPrice, cost, markup]);
@@ -49,7 +56,7 @@ export default function App() {
     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 font-sans text-slate-800">
       <div className="max-w-md w-full bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100">
         
-        {/* Header Vibe */}
+        {/* Header Vibe - 延平空機報價系統 */}
         <div className="bg-gradient-to-r from-red-700 to-red-600 p-6 text-white text-center">
           <h1 className="text-2xl font-bold tracking-wider flex items-center justify-center gap-2">
             <Calculator className="w-6 h-6" />
@@ -113,6 +120,13 @@ export default function App() {
                   placeholder="輸入成本以計算毛利"
                 />
               </div>
+              {/* 溢價警示提示 */}
+              {isPremium && (
+                <p className="mt-2 text-xs text-amber-600 font-medium flex items-center gap-1">
+                  <ShieldAlert className="w-3 h-3" />
+                  成本高於 Friday 售價，已自動補足溢價。
+                </p>
+              )}
             </div>
 
             {/* 彈性加價設定 */}
@@ -145,16 +159,24 @@ export default function App() {
             
             <div className="relative z-10">
               <p className="text-red-800 font-medium text-sm mb-1">對客系統報價</p>
-              <div className="flex items-baseline gap-2">
+              <div className="flex flex-col gap-1">
                 <span className="text-4xl font-bold text-red-900 tracking-tight">
                   {systemQuote > 0 ? formatPrice(systemQuote) : '$0'}
                 </span>
-                {isCapped && (
-                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-100 text-amber-700 text-xs font-semibold rounded-full">
-                    <AlertCircle className="w-3 h-3" />
-                    已達建議售價上限
-                  </span>
-                )}
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {isCapped && (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full">
+                      <AlertCircle className="w-3 h-3" />
+                      已達建議售價上限
+                    </span>
+                  )}
+                  {isPremium && (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-rose-100 text-rose-700 text-[10px] font-bold rounded-full">
+                      <ShieldAlert className="w-3 h-3" />
+                      成本基準保護中
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* 門市內部參考數據 (毛利) */}
