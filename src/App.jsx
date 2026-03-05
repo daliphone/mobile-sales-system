@@ -56,11 +56,11 @@ export default function App() {
     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 font-sans text-slate-800">
       <div className="max-w-md w-full bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100">
         
-        {/* Header Vibe - 延平空機報價系統 */}
+        {/* Header Vibe - 遠傳延平空機報價系統 */}
         <div className="bg-gradient-to-r from-red-700 to-red-600 p-6 text-white text-center">
           <h1 className="text-2xl font-bold tracking-wider flex items-center justify-center gap-2">
             <Calculator className="w-6 h-6" />
-            延平空機報價系統
+            遠傳延平空機報價系統
           </h1>
           <p className="text-red-200 text-sm mt-1 opacity-80">極簡 ‧ 防呆 ‧ 高效</p>
         </div>
